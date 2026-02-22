@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: "Hiragino Mincho Pro", "Yu Mincho", "游明朝", "MS PMincho",
+      Georgia, serif;
+  }
+}
