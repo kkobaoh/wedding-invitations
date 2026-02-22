@@ -1,27 +1,43 @@
 import {
     pgTable,
     serial,
+    uuid,
     varchar,
+    boolean,
     smallint,
     text,
     timestamp,
     pgEnum,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // ── PostgreSQL ENUM 型 ──────────────────────────────────────
-// .$type<>() による TypeScript のみの型上書きではなく、
-// DB レベルで "attend" | "absent" のみを許可する ENUM 型として定義する
 export const attendanceEnum = pgEnum("attendance_enum", ["attend", "absent"]);
+export const guestSideEnum = pgEnum("guest_side_enum", ["groom", "bride"]);
+export const hairSetEnum = pgEnum("hair_set_enum", [
+    "short",
+    "upstyle",
+    "mens",
+    "children",
+]);
+export const makeupEnum = pgEnum("makeup_enum", ["full", "base"]);
 
 // ── テーブル定義 ────────────────────────────────────────────
 export const rsvpResponses = pgTable("rsvp_responses", {
     id: serial("id").primaryKey(),
+    /** グループ ID: 同一申込の登録者 + 同行者をまとめる UUID */
+    groupId: uuid("group_id").notNull(),
+    /** true = 申込本人 / false = 同行者 */
+    isPrimary: boolean("is_primary").notNull().default(false),
     name: varchar("name", { length: 100 }).notNull(),
     furigana: varchar("furigana", { length: 100 }),
     attendance: attendanceEnum("attendance").notNull(),
-    guestCount: smallint("guest_count"),
+    /** 新郎側 / 新婦側 */
+    guestSide: guestSideEnum("guest_side"),
+    /** ヘアセットの種別（申込本人のみ設定） */
+    hairSet: hairSetEnum("hair_set"),
+    /** メイクの種別（申込本人のみ設定） */
+    makeup: makeupEnum("makeup"),
     dietaryRestrictions: text("dietary_restrictions"),
     postalCode: varchar("postal_code", { length: 20 }),
     address: text("address"),
@@ -31,23 +47,46 @@ export const rsvpResponses = pgTable("rsvp_responses", {
         .notNull(),
 });
 
-// ── バリデーションスキーマ ──────────────────────────────────
-// createInsertSchema が Drizzle テーブル定義から Zod スキーマを自動生成する。
-// スキーマと型定義が一元管理されるため、テーブル変更時の更新漏れを防ぐ。
-export const rsvpInsertSchema = createInsertSchema(rsvpResponses, {
-    // name: DB は varchar(100) だが、空文字を明示的に禁止する
-    name: (schema) => schema.trim().min(1, "お名前は必須です"),
-    // guestCount: フォームは文字列で送信するため coerce で数値に変換する
-    guestCount: z.coerce.number().int().min(1).max(5).nullable().optional(),
-}).omit({
-    // id / submittedAt は DB が自動設定するため、挿入時は不要
-    id: true,
-    submittedAt: true,
+export const rsvpImages = pgTable("rsvp_images", {
+    id: serial("id").primaryKey(),
+    groupId: uuid("group_id").notNull(),
+    url: text("url").notNull(),
+    sortOrder: smallint("sort_order").notNull().default(0),
+    submittedAt: timestamp("submitted_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+});
+
+// ── フォームバリデーションスキーマ ──────────────────────────
+export const rsvpFormSchema = z.object({
+    name: z.string().trim().min(1, "お名前は必須です"),
+    furigana: z.string().trim().optional(),
+    attendance: z.enum(attendanceEnum.enumValues),
+    guestSide: z.enum(guestSideEnum.enumValues).optional(),
+    /** 同行者リスト（申込本人を除く、最大 4 名） */
+    guests: z
+        .array(
+            z.object({
+                name: z.string().trim().min(1, "同行者のお名前を入力してください"),
+                furigana: z.string().trim().optional(),
+            })
+        )
+        .max(4)
+        .optional()
+        .default([]),
+    /** ヘアセット種別（出席者のみ） */
+    hairSet: z.enum(hairSetEnum.enumValues).optional(),
+    /** メイク種別（出席者のみ） */
+    makeup: z.enum(makeupEnum.enumValues).optional(),
+    dietaryRestrictions: z.string().trim().optional(),
+    postalCode: z.string().trim().optional(),
+    address: z.string().trim().optional(),
+    message: z.string().trim().optional(),
+    /** アップロード済み画像 URL（最大 5 枚） */
+    imageUrls: z.array(z.string()).max(5).optional().default([]),
 });
 
 // ── 型エクスポート ──────────────────────────────────────────
-/** API リクエストの入力型（Zod スキーマから自動導出） */
-export type RsvpInsert = z.infer<typeof rsvpInsertSchema>;
-
-/** Drizzle insert の型（DB 側の型） */
+export type RsvpFormInput = z.infer<typeof rsvpFormSchema>;
 export type NewRsvpResponse = typeof rsvpResponses.$inferInsert;
+export type NewRsvpImage = typeof rsvpImages.$inferInsert;

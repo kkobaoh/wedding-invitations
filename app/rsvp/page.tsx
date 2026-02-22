@@ -1,37 +1,169 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { WEDDING } from "@/lib/wedding";
 
 type Attendance = "attend" | "absent" | "";
+type GuestSide = "groom" | "bride" | "";
+type HairSet = "short" | "upstyle" | "mens" | "children" | "";
+type Makeup = "full" | "base" | "";
+
+type Guest = {
+    name: string;
+    furigana: string;
+};
 
 type FormData = {
     name: string;
     furigana: string;
     attendance: Attendance;
-    guestCount: string;
+    guestSide: GuestSide;
+    guestCount: number;
+    guests: Guest[];
+    hairSet: HairSet;
+    makeup: Makeup;
     dietaryRestrictions: string;
     postalCode: string;
     address: string;
     message: string;
 };
 
-type Errors = Partial<Record<keyof FormData, string>>;
+type GuestErrors = Partial<Record<keyof Guest, string>>;
 
+type Errors = Partial<
+    Record<keyof Omit<FormData, "guests" | "guestCount">, string>
+> & { guests?: GuestErrors[] };
+
+// ── オプション定義 ───────────────────────────────────────────
+const HAIR_SET_OPTIONS = [
+    { value: "short" as const, label: "ショート", price: 5500 },
+    { value: "upstyle" as const, label: "アップスタイル", price: 9900 },
+    { value: "mens" as const, label: "メンズヘアセット", price: 5500 },
+    {
+        value: "children" as const,
+        label: "お子様ヘアセット（10歳以下）",
+        price: 5500,
+    },
+];
+
+const MAKEUP_OPTIONS = [
+    { value: "full" as const, label: "フルメイク", price: 8800 },
+    {
+        value: "base" as const,
+        label: "ベースメイク（電子水スキンケア）",
+        price: 11000,
+    },
+];
+
+const fmt = (price: number) =>
+    price.toLocaleString("ja-JP") + "円";
+
+// ── スタイル定数 ─────────────────────────────────────────────
 const inputClass =
     "w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-colors bg-white";
 const labelClass = "block text-sm text-gray-600 mb-2";
 const errorClass = "text-rose-400 text-xs mt-1";
 
+const MAX_IMAGES = 5;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+// ── ラジオカードコンポーネント ────────────────────────────────
+// 通常のラジオ（再クリックで解除しない）
+function RadioCard({
+    name,
+    value,
+    checked,
+    onChange,
+    label,
+    sub,
+}: {
+    name: string;
+    value: string;
+    checked: boolean;
+    onChange: () => void;
+    label: string;
+    sub?: string;
+}) {
+    return (
+        <label
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${
+                checked
+                    ? "border-rose-400 bg-rose-50 text-rose-500"
+                    : "border-gray-200 text-gray-500 hover:border-rose-200"
+            }`}
+        >
+            <input
+                type="radio"
+                name={name}
+                value={value}
+                checked={checked}
+                onChange={onChange}
+                className="sr-only"
+            />
+            <span>{label}</span>
+            {sub && (
+                <span
+                    className={`text-xs ${checked ? "text-rose-400" : "text-gray-400"}`}
+                >
+                    {sub}
+                </span>
+            )}
+        </label>
+    );
+}
+
+// トグルカードコンポーネント（再クリックで選択解除）
+function ToggleCard({
+    checked,
+    onToggle,
+    label,
+    sub,
+}: {
+    checked: boolean;
+    onToggle: () => void;
+    label: string;
+    sub?: string;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onToggle}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${
+                checked
+                    ? "border-rose-400 bg-rose-50 text-rose-500"
+                    : "border-gray-200 text-gray-500 hover:border-rose-200"
+            }`}
+        >
+            <span>{label}</span>
+            {sub && (
+                <span
+                    className={`text-xs ${checked ? "text-rose-400" : "text-gray-400"}`}
+                >
+                    {sub}
+                </span>
+            )}
+        </button>
+    );
+}
+
+// ── メインコンポーネント ─────────────────────────────────────
 export default function RsvpPage() {
     const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     const [formData, setFormData] = useState<FormData>({
         name: "",
         furigana: "",
         attendance: "",
-        guestCount: "1",
+        guestSide: "",
+        guestCount: 1,
+        guests: [],
+        hairSet: "",
+        makeup: "",
         dietaryRestrictions: "",
         postalCode: "",
         address: "",
@@ -40,17 +172,129 @@ export default function RsvpPage() {
     const [errors, setErrors] = useState<Errors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [showHairSet, setShowHairSet] = useState(false);
+    const [showMakeup, setShowMakeup] = useState(false);
 
-    const set = (field: keyof FormData) => (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-    ) => setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    const set =
+        (field: keyof Omit<FormData, "guests" | "guestCount">) =>
+        (
+            e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+            >
+        ) =>
+            setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+
+    const setRadio =
+        <K extends keyof FormData>(field: K, value: FormData[K]) =>
+        () =>
+            setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // 再クリックで選択解除するトグル（hairSet / makeup 用）
+    const toggleOption =
+        <K extends "hairSet" | "makeup">(field: K, value: FormData[K]) =>
+        () =>
+            setFormData((prev) => ({
+                ...prev,
+                [field]: prev[field] === value ? "" : value,
+            }));
+
+    const handleGuestCountChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        const count = Number(e.target.value);
+        const companionCount = count - 1;
+        setFormData((prev) => {
+            const newGuests = Array.from({ length: companionCount }, (_, i) => ({
+                name: prev.guests[i]?.name ?? "",
+                furigana: prev.guests[i]?.furigana ?? "",
+            }));
+            return { ...prev, guestCount: count, guests: newGuests };
+        });
+    };
+
+    const setGuest =
+        (index: number, field: keyof Guest) =>
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setFormData((prev) => {
+                const guests = [...prev.guests];
+                guests[index] = {
+                    ...(guests[index] ?? { name: "", furigana: "" }),
+                    [field]: e.target.value,
+                };
+                return { ...prev, guests };
+            });
+        };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selected = Array.from(e.target.files ?? []);
+        const remaining = MAX_IMAGES - imageFiles.length;
+        if (remaining <= 0) return;
+
+        const toAdd = selected.slice(0, remaining).filter((f) => {
+            if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+                setSubmitError("JPEG・PNG・WebP・GIF 形式の画像のみ選択できます");
+                return false;
+            }
+            if (f.size > MAX_IMAGE_SIZE) {
+                setSubmitError("1 枚あたり 5 MB 以内の画像を選択してください");
+                return false;
+            }
+            return true;
+        });
+
+        if (toAdd.length === 0) return;
+        setSubmitError(null);
+
+        const newPreviews = toAdd.map((f) => URL.createObjectURL(f));
+        setImageFiles((prev) => [...prev, ...toAdd]);
+        setImagePreviews((prev) => [...prev, ...newPreviews]);
+
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const removeImage = (index: number) => {
+        const preview = imagePreviews[index];
+        if (preview) URL.revokeObjectURL(preview);
+        setImageFiles((prev) => prev.filter((_, i) => i !== index));
+        setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    };
 
     const validate = (): boolean => {
         const newErrors: Errors = {};
         if (!formData.name.trim()) newErrors.name = "お名前を入力してください";
         if (!formData.attendance) newErrors.attendance = "ご出欠を選択してください";
+
+        const guestErrors: GuestErrors[] = [];
+        let hasGuestError = false;
+        formData.guests.forEach((g, i) => {
+            const ge: GuestErrors = {};
+            if (!g.name.trim()) {
+                ge.name = "同行者のお名前を入力してください";
+                hasGuestError = true;
+            }
+            guestErrors[i] = ge;
+        });
+        if (hasGuestError) newErrors.guests = guestErrors;
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const uploadImages = async (): Promise<string[]> => {
+        if (imageFiles.length === 0) return [];
+
+        const fd = new FormData();
+        imageFiles.forEach((f) => fd.append("images", f));
+
+        const res = await fetch("/api/rsvp/images", { method: "POST", body: fd });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error ?? "画像のアップロードに失敗しました");
+        }
+        const data = await res.json();
+        return data.urls as string[];
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -60,10 +304,33 @@ export default function RsvpPage() {
         setSubmitError(null);
 
         try {
+            const imageUrls = await uploadImages();
+
+            const isAttending = formData.attendance === "attend";
+            const payload = {
+                name: formData.name,
+                furigana: formData.furigana || undefined,
+                attendance: formData.attendance,
+                guestSide: formData.guestSide || undefined,
+                guests: isAttending
+                    ? formData.guests.map((g) => ({
+                          name: g.name,
+                          furigana: g.furigana || undefined,
+                      }))
+                    : [],
+                hairSet: isAttending ? formData.hairSet || undefined : undefined,
+                makeup: isAttending ? formData.makeup || undefined : undefined,
+                dietaryRestrictions: formData.dietaryRestrictions || undefined,
+                postalCode: formData.postalCode || undefined,
+                address: formData.address || undefined,
+                message: formData.message || undefined,
+                imageUrls,
+            };
+
             const res = await fetch("/api/rsvp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
@@ -85,6 +352,8 @@ export default function RsvpPage() {
             setIsSubmitting(false);
         }
     };
+
+    const isAttending = formData.attendance === "attend";
 
     return (
         <main className="min-h-screen bg-stone-50 py-16 px-4">
@@ -147,52 +416,182 @@ export default function RsvpPage() {
                             ご出欠 <span className="text-rose-400">*</span>
                         </label>
                         <div className="flex gap-4">
-                            {(
-                                [
-                                    { value: "attend", label: "喜んで出席" },
-                                    { value: "absent", label: "誠に残念ながら欠席" },
-                                ] as { value: Attendance; label: string }[]
-                            ).map((opt) => (
-                                <label
-                                    key={opt.value}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3 border rounded-lg cursor-pointer transition-colors text-sm ${
-                                        formData.attendance === opt.value
-                                            ? "border-rose-400 bg-rose-50 text-rose-500"
-                                            : "border-gray-200 text-gray-500 hover:border-rose-200"
-                                    }`}
-                                >
-                                    <input
-                                        type="radio"
-                                        name="attendance"
-                                        value={opt.value}
-                                        checked={formData.attendance === opt.value}
-                                        onChange={set("attendance")}
-                                        className="sr-only"
-                                    />
-                                    {opt.label}
-                                </label>
-                            ))}
+                            <RadioCard
+                                name="attendance"
+                                value="attend"
+                                checked={formData.attendance === "attend"}
+                                onChange={setRadio("attendance", "attend")}
+                                label="喜んで出席"
+                            />
+                            <RadioCard
+                                name="attendance"
+                                value="absent"
+                                checked={formData.attendance === "absent"}
+                                onChange={setRadio("attendance", "absent")}
+                                label="誠に残念ながら欠席"
+                            />
                         </div>
                         {errors.attendance && (
                             <p className={errorClass}>{errors.attendance}</p>
                         )}
                     </div>
 
+                    {/* 新郎・新婦どちらのゲストか */}
+                    {formData.attendance && (
+                        <div>
+                            <label className={labelClass}>ご招待の区分</label>
+                            <div className="flex gap-4">
+                                <RadioCard
+                                    name="guestSide"
+                                    value="groom"
+                                    checked={formData.guestSide === "groom"}
+                                    onChange={setRadio("guestSide", "groom")}
+                                    label={`新郎（${WEDDING.groomJa}）側`}
+                                />
+                                <RadioCard
+                                    name="guestSide"
+                                    value="bride"
+                                    checked={formData.guestSide === "bride"}
+                                    onChange={setRadio("guestSide", "bride")}
+                                    label={`新婦（${WEDDING.brideJa}）側`}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* 参加人数（出席の場合のみ） */}
-                    {formData.attendance === "attend" && (
+                    {isAttending && (
                         <div>
                             <label className={labelClass}>参加人数</label>
                             <select
                                 value={formData.guestCount}
-                                onChange={set("guestCount")}
+                                onChange={handleGuestCountChange}
                                 className={inputClass}
                             >
                                 {[1, 2, 3, 4, 5].map((n) => (
-                                    <option key={n} value={String(n)}>
+                                    <option key={n} value={n}>
                                         {n} 名
                                     </option>
                                 ))}
                             </select>
+                        </div>
+                    )}
+
+                    {/* 同行者の名前入力（2名以上の場合） */}
+                    {isAttending &&
+                        formData.guests.map((guest, i) => (
+                            <div
+                                key={i}
+                                className="border border-gray-100 rounded-xl p-4 space-y-4 bg-stone-50"
+                            >
+                                <p className="text-sm text-gray-500">
+                                    同行者 {i + 1} 名目
+                                </p>
+                                <div>
+                                    <label className={labelClass}>
+                                        お名前 <span className="text-rose-400">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={guest.name}
+                                        onChange={setGuest(i, "name")}
+                                        placeholder="山田 花子"
+                                        className={inputClass}
+                                    />
+                                    {errors.guests?.[i]?.name && (
+                                        <p className={errorClass}>
+                                            {errors.guests[i].name}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className={labelClass}>ふりがな</label>
+                                    <input
+                                        type="text"
+                                        value={guest.furigana}
+                                        onChange={setGuest(i, "furigana")}
+                                        placeholder="やまだ はなこ"
+                                        className={inputClass}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+
+                    {/* ヘアセット（出席の場合のみ・アコーディオン） */}
+                    {isAttending && (
+                        <div className="border border-gray-100 rounded-xl overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => setShowHairSet((v) => !v)}
+                                className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-600 hover:bg-stone-50 transition-colors"
+                            >
+                                <span className="flex items-center gap-2">
+                                    ヘアセット
+                                    <span className="text-gray-400 text-xs">（任意）</span>
+                                    {formData.hairSet && !showHairSet && (
+                                        <span className="text-rose-400 text-xs">
+                                            {HAIR_SET_OPTIONS.find(
+                                                (o) => o.value === formData.hairSet
+                                            )?.label}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="text-gray-400 text-xs">
+                                    {showHairSet ? "▲" : "▼"}
+                                </span>
+                            </button>
+                            {showHairSet && (
+                                <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+                                    {HAIR_SET_OPTIONS.map((opt) => (
+                                        <ToggleCard
+                                            key={opt.value}
+                                            checked={formData.hairSet === opt.value}
+                                            onToggle={toggleOption("hairSet", opt.value)}
+                                            label={opt.label}
+                                            sub={fmt(opt.price)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* メイク（出席の場合のみ・アコーディオン） */}
+                    {isAttending && (
+                        <div className="border border-gray-100 rounded-xl overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => setShowMakeup((v) => !v)}
+                                className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-600 hover:bg-stone-50 transition-colors"
+                            >
+                                <span className="flex items-center gap-2">
+                                    メイク
+                                    <span className="text-gray-400 text-xs">（任意）</span>
+                                    {formData.makeup && !showMakeup && (
+                                        <span className="text-rose-400 text-xs">
+                                            {MAKEUP_OPTIONS.find(
+                                                (o) => o.value === formData.makeup
+                                            )?.label}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="text-gray-400 text-xs">
+                                    {showMakeup ? "▲" : "▼"}
+                                </span>
+                            </button>
+                            {showMakeup && (
+                                <div className="px-4 pb-4 flex gap-3">
+                                    {MAKEUP_OPTIONS.map((opt) => (
+                                        <ToggleCard
+                                            key={opt.value}
+                                            checked={formData.makeup === opt.value}
+                                            onToggle={toggleOption("makeup", opt.value)}
+                                            label={opt.label}
+                                            sub={fmt(opt.price)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -241,6 +640,57 @@ export default function RsvpPage() {
                             placeholder="ご自由にお書きください"
                             rows={5}
                             className={`${inputClass} resize-none`}
+                        />
+                    </div>
+
+                    {/* 画像添付 */}
+                    <div>
+                        <label className={labelClass}>
+                            画像の添付{" "}
+                            <span className="text-gray-400 text-xs">
+                                （最大 {MAX_IMAGES} 枚・各 5 MB 以内）
+                            </span>
+                        </label>
+
+                        {imagePreviews.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2 mb-3">
+                                {imagePreviews.map((src, i) => (
+                                    <div key={i} className="relative aspect-square">
+                                        <Image
+                                            src={src}
+                                            alt={`添付画像 ${i + 1}`}
+                                            fill
+                                            className="object-cover rounded-lg"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(i)}
+                                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-600 text-white rounded-full text-xs flex items-center justify-center hover:bg-gray-800 transition-colors"
+                                            aria-label="画像を削除"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {imageFiles.length < MAX_IMAGES && (
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full border-2 border-dashed border-gray-200 rounded-lg py-4 text-gray-400 text-sm hover:border-rose-200 hover:text-rose-400 transition-colors"
+                            >
+                                + 画像を選択
+                            </button>
+                        )}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            multiple
+                            onChange={handleImageChange}
+                            className="hidden"
                         />
                     </div>
 

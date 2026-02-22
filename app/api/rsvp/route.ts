@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { rsvpResponses, rsvpInsertSchema } from "@/lib/schema";
+import { rsvpResponses, rsvpImages, rsvpFormSchema } from "@/lib/schema";
 
 export async function POST(request: Request) {
     try {
-        // rsvpInsertSchema で解析・バリデーションを一括実行
-        // request.json() は any を返すが、safeParse が型安全な data を保証する
-        const parsed = rsvpInsertSchema.safeParse(await request.json());
+        const parsed = rsvpFormSchema.safeParse(await request.json());
 
         if (!parsed.success) {
             const message =
@@ -15,19 +13,57 @@ export async function POST(request: Request) {
         }
 
         const data = parsed.data;
+        const groupId = crypto.randomUUID();
 
-        await db.insert(rsvpResponses).values({
-            name: data.name,
-            furigana: data.furigana ?? null,
-            attendance: data.attendance,
-            // 欠席の場合は guestCount を保存しない
-            guestCount:
-                data.attendance === "attend" ? (data.guestCount ?? 1) : null,
-            dietaryRestrictions: data.dietaryRestrictions ?? null,
-            postalCode: data.postalCode ?? null,
-            address: data.address ?? null,
-            message: data.message ?? null,
-        });
+        // 申込本人を挿入
+        const records = [
+            {
+                groupId,
+                isPrimary: true,
+                name: data.name,
+                furigana: data.furigana ?? null,
+                attendance: data.attendance,
+                guestSide: data.guestSide ?? null,
+                hairSet: data.hairSet ?? null,
+                makeup: data.makeup ?? null,
+                dietaryRestrictions: data.dietaryRestrictions ?? null,
+                postalCode: data.postalCode ?? null,
+                address: data.address ?? null,
+                message: data.message ?? null,
+            },
+        ];
+
+        // 同行者を挿入（住所は申込本人のデータを流用、ヘアセット/メイク/メッセージは null）
+        for (const guest of data.guests ?? []) {
+            records.push({
+                groupId,
+                isPrimary: false,
+                name: guest.name,
+                furigana: guest.furigana ?? null,
+                attendance: data.attendance,
+                guestSide: data.guestSide ?? null,
+                hairSet: null,
+                makeup: null,
+                dietaryRestrictions: null,
+                postalCode: data.postalCode ?? null,
+                address: data.address ?? null,
+                message: null,
+            });
+        }
+
+        await db.insert(rsvpResponses).values(records);
+
+        // 画像レコードを挿入
+        const imageUrls = data.imageUrls ?? [];
+        if (imageUrls.length > 0) {
+            await db.insert(rsvpImages).values(
+                imageUrls.map((url, index) => ({
+                    groupId,
+                    url,
+                    sortOrder: index,
+                }))
+            );
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

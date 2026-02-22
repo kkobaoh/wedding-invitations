@@ -1,9 +1,10 @@
 import { defineConfig } from "drizzle-kit";
 import { config } from "dotenv";
 
-// drizzle-kit は Next.js と別プロセスで動くため .env.local を自動で読み込まない
-// 明示的にロードする（.env.local が存在しない場合は無視される）
-config({ path: ".env.local" });
+// 本番環境用 drizzle-kit 設定
+// .env.production.local から DATABASE_URL を読み込む
+// 使用方法: npm run db:push:prod
+config({ path: ".env.production.local" });
 
 export default defineConfig({
     schema: "./lib/schema.ts",
