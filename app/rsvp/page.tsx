@@ -14,6 +14,9 @@ type Makeup = "full" | "base" | "";
 type Guest = {
     name: string;
     furigana: string;
+    hairSet: HairSet;
+    makeup: Makeup;
+    allergy: string;
 };
 
 type FormData = {
@@ -90,11 +93,10 @@ function RadioCard({
 }) {
     return (
         <label
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${
-                checked
-                    ? "border-rose-400 bg-rose-50 text-rose-500"
-                    : "border-gray-200 text-gray-500 hover:border-rose-200"
-            }`}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${checked
+                ? "border-rose-400 bg-rose-50 text-rose-500"
+                : "border-gray-200 text-gray-500 hover:border-rose-200"
+                }`}
         >
             <input
                 type="radio"
@@ -132,11 +134,10 @@ function ToggleCard({
         <button
             type="button"
             onClick={onToggle}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${
-                checked
-                    ? "border-rose-400 bg-rose-50 text-rose-500"
-                    : "border-gray-200 text-gray-500 hover:border-rose-200"
-            }`}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${checked
+                ? "border-rose-400 bg-rose-50 text-rose-500"
+                : "border-gray-200 text-gray-500 hover:border-rose-200"
+                }`}
         >
             <span>{label}</span>
             {sub && (
@@ -176,29 +177,31 @@ export default function RsvpPage() {
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [showHairSet, setShowHairSet] = useState(false);
     const [showMakeup, setShowMakeup] = useState(false);
+    const [showCompanionHairSet, setShowCompanionHairSet] = useState<boolean[]>([]);
+    const [showCompanionMakeup, setShowCompanionMakeup] = useState<boolean[]>([]);
 
     const set =
         (field: keyof Omit<FormData, "guests" | "guestCount">) =>
-        (
-            e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-            >
-        ) =>
-            setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+            (
+                e: React.ChangeEvent<
+                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >
+            ) =>
+                setFormData((prev) => ({ ...prev, [field]: e.target.value }));
 
     const setRadio =
         <K extends keyof FormData>(field: K, value: FormData[K]) =>
-        () =>
-            setFormData((prev) => ({ ...prev, [field]: value }));
+            () =>
+                setFormData((prev) => ({ ...prev, [field]: value }));
 
     // 再クリックで選択解除するトグル（hairSet / makeup 用）
     const toggleOption =
         <K extends "hairSet" | "makeup">(field: K, value: FormData[K]) =>
-        () =>
-            setFormData((prev) => ({
-                ...prev,
-                [field]: prev[field] === value ? "" : value,
-            }));
+            () =>
+                setFormData((prev) => ({
+                    ...prev,
+                    [field]: prev[field] === value ? "" : value,
+                }));
 
     const handleGuestCountChange = (
         e: React.ChangeEvent<HTMLSelectElement>
@@ -209,23 +212,46 @@ export default function RsvpPage() {
             const newGuests = Array.from({ length: companionCount }, (_, i) => ({
                 name: prev.guests[i]?.name ?? "",
                 furigana: prev.guests[i]?.furigana ?? "",
+                hairSet: prev.guests[i]?.hairSet ?? ("" as HairSet),
+                makeup: prev.guests[i]?.makeup ?? ("" as Makeup),
+                allergy: prev.guests[i]?.allergy ?? "",
             }));
             return { ...prev, guestCount: count, guests: newGuests };
         });
+        setShowCompanionHairSet((prev) =>
+            Array.from({ length: companionCount }, (_, i) => prev[i] ?? false)
+        );
+        setShowCompanionMakeup((prev) =>
+            Array.from({ length: companionCount }, (_, i) => prev[i] ?? false)
+        );
     };
 
     const setGuest =
         (index: number, field: keyof Guest) =>
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            setFormData((prev) => {
-                const guests = [...prev.guests];
-                guests[index] = {
-                    ...(guests[index] ?? { name: "", furigana: "" }),
-                    [field]: e.target.value,
-                };
-                return { ...prev, guests };
-            });
-        };
+            (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                setFormData((prev) => {
+                    const guests = [...prev.guests];
+                    guests[index] = {
+                        ...(guests[index] ?? { name: "", furigana: "", hairSet: "" as HairSet, makeup: "" as Makeup, allergy: "" }),
+                        [field]: e.target.value,
+                    };
+                    return { ...prev, guests };
+                });
+            };
+
+    const toggleCompanionOption =
+        (index: number, field: "hairSet" | "makeup", value: HairSet | Makeup) =>
+            () => {
+                setFormData((prev) => {
+                    const newGuests = [...prev.guests];
+                    const g = newGuests[index]!;
+                    (newGuests[index] as Guest) = {
+                        ...g,
+                        [field]: g[field] === value ? "" : value,
+                    };
+                    return { ...prev, guests: newGuests };
+                });
+            };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selected = Array.from(e.target.files ?? []);
@@ -314,9 +340,12 @@ export default function RsvpPage() {
                 guestSide: formData.guestSide || undefined,
                 guests: isAttending
                     ? formData.guests.map((g) => ({
-                          name: g.name,
-                          furigana: g.furigana || undefined,
-                      }))
+                        name: g.name,
+                        furigana: g.furigana || undefined,
+                        hairSet: g.hairSet || undefined,
+                        makeup: g.makeup || undefined,
+                        allergy: g.allergy || undefined,
+                    }))
                     : [],
                 hairSet: isAttending ? formData.hairSet || undefined : undefined,
                 makeup: isAttending ? formData.makeup || undefined : undefined,
@@ -383,6 +412,54 @@ export default function RsvpPage() {
                     onSubmit={handleSubmit}
                     className="bg-white rounded-2xl shadow-sm p-8 space-y-6"
                 >
+
+                    {/* ご出欠 */}
+                    <div>
+                        <label className={labelClass}>
+                            ご出欠 <span className="text-rose-400">*</span>
+                        </label>
+                        <div className="flex gap-4">
+                            <RadioCard
+                                name="attendance"
+                                value="attend"
+                                checked={formData.attendance === "attend"}
+                                onChange={setRadio("attendance", "attend")}
+                                label="出席"
+                            />
+                            <RadioCard
+                                name="attendance"
+                                value="absent"
+                                checked={formData.attendance === "absent"}
+                                onChange={setRadio("attendance", "absent")}
+                                label="欠席"
+                            />
+                        </div>
+                        {errors.attendance && (
+                            <p className={errorClass}>{errors.attendance}</p>
+                        )}
+                    </div>
+
+                    {/* 新郎・新婦どちらのゲストか */}
+                    <div>
+                        <label className={labelClass}>ご招待の区分</label>
+                        <div className="flex gap-4">
+                            <RadioCard
+                                name="guestSide"
+                                value="groom"
+                                checked={formData.guestSide === "groom"}
+                                onChange={setRadio("guestSide", "groom")}
+                                label={`新郎（${WEDDING.groomJa}）側`}
+                            />
+                            <RadioCard
+                                name="guestSide"
+                                value="bride"
+                                checked={formData.guestSide === "bride"}
+                                onChange={setRadio("guestSide", "bride")}
+                                label={`新婦（${WEDDING.brideJa}）側`}
+                            />
+                        </div>
+                    </div>
+
                     {/* お名前 */}
                     <div>
                         <label className={labelClass}>
@@ -409,114 +486,29 @@ export default function RsvpPage() {
                             className={inputClass}
                         />
                     </div>
-
-                    {/* ご出欠 */}
+                    {/* 郵便番号 */}
                     <div>
-                        <label className={labelClass}>
-                            ご出欠 <span className="text-rose-400">*</span>
-                        </label>
-                        <div className="flex gap-4">
-                            <RadioCard
-                                name="attendance"
-                                value="attend"
-                                checked={formData.attendance === "attend"}
-                                onChange={setRadio("attendance", "attend")}
-                                label="喜んで出席"
-                            />
-                            <RadioCard
-                                name="attendance"
-                                value="absent"
-                                checked={formData.attendance === "absent"}
-                                onChange={setRadio("attendance", "absent")}
-                                label="誠に残念ながら欠席"
-                            />
-                        </div>
-                        {errors.attendance && (
-                            <p className={errorClass}>{errors.attendance}</p>
-                        )}
+                        <label className={labelClass}>郵便番号</label>
+                        <input
+                            type="text"
+                            value={formData.postalCode}
+                            onChange={set("postalCode")}
+                            placeholder="000-0000"
+                            className={inputClass}
+                        />
                     </div>
 
-                    {/* 新郎・新婦どちらのゲストか */}
-                    {formData.attendance && (
-                        <div>
-                            <label className={labelClass}>ご招待の区分</label>
-                            <div className="flex gap-4">
-                                <RadioCard
-                                    name="guestSide"
-                                    value="groom"
-                                    checked={formData.guestSide === "groom"}
-                                    onChange={setRadio("guestSide", "groom")}
-                                    label={`新郎（${WEDDING.groomJa}）側`}
-                                />
-                                <RadioCard
-                                    name="guestSide"
-                                    value="bride"
-                                    checked={formData.guestSide === "bride"}
-                                    onChange={setRadio("guestSide", "bride")}
-                                    label={`新婦（${WEDDING.brideJa}）側`}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 参加人数（出席の場合のみ） */}
-                    {isAttending && (
-                        <div>
-                            <label className={labelClass}>参加人数</label>
-                            <select
-                                value={formData.guestCount}
-                                onChange={handleGuestCountChange}
-                                className={inputClass}
-                            >
-                                {[1, 2, 3, 4, 5].map((n) => (
-                                    <option key={n} value={n}>
-                                        {n} 名
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
-                    {/* 同行者の名前入力（2名以上の場合） */}
-                    {isAttending &&
-                        formData.guests.map((guest, i) => (
-                            <div
-                                key={i}
-                                className="border border-gray-100 rounded-xl p-4 space-y-4 bg-stone-50"
-                            >
-                                <p className="text-sm text-gray-500">
-                                    同行者 {i + 1} 名目
-                                </p>
-                                <div>
-                                    <label className={labelClass}>
-                                        お名前 <span className="text-rose-400">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={guest.name}
-                                        onChange={setGuest(i, "name")}
-                                        placeholder="山田 花子"
-                                        className={inputClass}
-                                    />
-                                    {errors.guests?.[i]?.name && (
-                                        <p className={errorClass}>
-                                            {errors.guests[i].name}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className={labelClass}>ふりがな</label>
-                                    <input
-                                        type="text"
-                                        value={guest.furigana}
-                                        onChange={setGuest(i, "furigana")}
-                                        placeholder="やまだ はなこ"
-                                        className={inputClass}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-
+                    {/* ご住所 */}
+                    <div>
+                        <label className={labelClass}>ご住所</label>
+                        <textarea
+                            value={formData.address}
+                            onChange={set("address")}
+                            placeholder={"東京都〇〇区〇〇1-2-3\n〇〇マンション101"}
+                            rows={3}
+                            className={`${inputClass} resize-none`}
+                        />
+                    </div>
                     {/* ヘアセット（出席の場合のみ・アコーディオン） */}
                     {isAttending && (
                         <div className="border border-gray-100 rounded-xl overflow-hidden">
@@ -607,29 +599,150 @@ export default function RsvpPage() {
                         />
                     </div>
 
-                    {/* 郵便番号 */}
-                    <div>
-                        <label className={labelClass}>郵便番号</label>
-                        <input
-                            type="text"
-                            value={formData.postalCode}
-                            onChange={set("postalCode")}
-                            placeholder="000-0000"
-                            className={inputClass}
-                        />
-                    </div>
+                    {/* 参加人数（出席の場合のみ） */}
+                    {isAttending && (
+                        <div>
+                            <label className={labelClass}>参加人数</label>
+                            <select
+                                value={formData.guestCount}
+                                onChange={handleGuestCountChange}
+                                className={inputClass}
+                            >
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                    <option key={n} value={n}>
+                                        {n} 名
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
-                    {/* ご住所 */}
-                    <div>
-                        <label className={labelClass}>ご住所</label>
-                        <textarea
-                            value={formData.address}
-                            onChange={set("address")}
-                            placeholder={"東京都〇〇区〇〇1-2-3\n〇〇マンション101"}
-                            rows={3}
-                            className={`${inputClass} resize-none`}
-                        />
-                    </div>
+                    {/* 同行者（2名以上の場合） */}
+                    {isAttending &&
+                        formData.guests.map((guest, i) => (
+                            <div
+                                key={i}
+                                className="border border-gray-100 rounded-xl p-4 space-y-4 bg-stone-50"
+                            >
+                                <p className="text-sm text-gray-500">
+                                    同行者 {i + 1} 名目
+                                </p>
+                                <div>
+                                    <label className={labelClass}>
+                                        お名前 <span className="text-rose-400">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={guest.name}
+                                        onChange={setGuest(i, "name")}
+                                        placeholder="山田 花子"
+                                        className={inputClass}
+                                    />
+                                    {errors.guests?.[i]?.name && (
+                                        <p className={errorClass}>
+                                            {errors.guests[i].name}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className={labelClass}>ふりがな</label>
+                                    <input
+                                        type="text"
+                                        value={guest.furigana}
+                                        onChange={setGuest(i, "furigana")}
+                                        placeholder="やまだ はなこ"
+                                        className={inputClass}
+                                    />
+                                </div>
+                                {/* ヘアセット */}
+                                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowCompanionHairSet((prev) =>
+                                                prev.map((v, j) => (j === i ? !v : v))
+                                            )
+                                        }
+                                        className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-600 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            ヘアセット
+                                            <span className="text-gray-400 text-xs">（任意）</span>
+                                            {guest.hairSet && !showCompanionHairSet[i] && (
+                                                <span className="text-rose-400 text-xs">
+                                                    {HAIR_SET_OPTIONS.find((o) => o.value === guest.hairSet)?.label}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className="text-gray-400 text-xs">
+                                            {showCompanionHairSet[i] ? "▲" : "▼"}
+                                        </span>
+                                    </button>
+                                    {showCompanionHairSet[i] && (
+                                        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+                                            {HAIR_SET_OPTIONS.map((opt) => (
+                                                <ToggleCard
+                                                    key={opt.value}
+                                                    checked={guest.hairSet === opt.value}
+                                                    onToggle={toggleCompanionOption(i, "hairSet", opt.value)}
+                                                    label={opt.label}
+                                                    sub={fmt(opt.price)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {/* メイク */}
+                                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowCompanionMakeup((prev) =>
+                                                prev.map((v, j) => (j === i ? !v : v))
+                                            )
+                                        }
+                                        className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-600 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            メイク
+                                            <span className="text-gray-400 text-xs">（任意）</span>
+                                            {guest.makeup && !showCompanionMakeup[i] && (
+                                                <span className="text-rose-400 text-xs">
+                                                    {MAKEUP_OPTIONS.find((o) => o.value === guest.makeup)?.label}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className="text-gray-400 text-xs">
+                                            {showCompanionMakeup[i] ? "▲" : "▼"}
+                                        </span>
+                                    </button>
+                                    {showCompanionMakeup[i] && (
+                                        <div className="px-4 pb-4 flex gap-3">
+                                            {MAKEUP_OPTIONS.map((opt) => (
+                                                <ToggleCard
+                                                    key={opt.value}
+                                                    checked={guest.makeup === opt.value}
+                                                    onToggle={toggleCompanionOption(i, "makeup", opt.value)}
+                                                    label={opt.label}
+                                                    sub={fmt(opt.price)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {/* アレルギー・食事制限 */}
+                                <div>
+                                    <label className={labelClass}>アレルギー・食事制限</label>
+                                    <textarea
+                                        value={guest.allergy}
+                                        onChange={setGuest(i, "allergy")}
+                                        placeholder="例：えび・かにアレルギー、ベジタリアン など"
+                                        rows={2}
+                                        className={`${inputClass} resize-none`}
+                                    />
+                                </div>
+                            </div>
+                        ))}
 
                     {/* メッセージ */}
                     <div>
@@ -646,7 +759,7 @@ export default function RsvpPage() {
                     {/* 画像添付 */}
                     <div>
                         <label className={labelClass}>
-                            画像の添付{" "}
+                            思い出の画像を送っていただけると嬉しいです！{" "}
                             <span className="text-gray-400 text-xs">
                                 （最大 {MAX_IMAGES} 枚・各 5 MB 以内）
                             </span>

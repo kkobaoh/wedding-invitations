@@ -73,6 +73,9 @@ export const rsvpFormSchema = z.object({
             z.object({
                 name: z.string().trim().min(1, "同行者のお名前を入力してください"),
                 furigana: z.string().trim().optional(),
+                hairSet: z.enum(hairSetEnum.enumValues).optional(),
+                makeup: z.enum(makeupEnum.enumValues).optional(),
+                allergy: z.string().trim().optional(),
             })
         )
         .max(4)

@@ -49,9 +49,9 @@ export async function POST(request: Request) {
                     name: g.name,
                     furigana: g.furigana ?? null,
                     guestSide: data.guestSide ?? null,
-                    hairSet: null,
-                    makeup: null,
-                    allergy: null,
+                    hairSet: g.hairSet ?? null,
+                    makeup: g.makeup ?? null,
+                    allergy: g.allergy ?? null,
                     invitationId,
                 }))
             );
