@@ -5,12 +5,19 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "dev:docker": "dotenv -e .env.docker -- next dev",
     "build": "next build",
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watch",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:push:prod": "drizzle-kit push --config=drizzle.config.prod.ts",
+    "db:studio:prod": "drizzle-kit studio --config=drizzle.config.prod.ts",
+    "db:push:docker": "drizzle-kit push --config=drizzle.config.docker.ts",
+    "db:studio:docker": "drizzle-kit studio --config=drizzle.config.docker.ts",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "author": "",
   "license": "MIT",
@@ -20,6 +27,7 @@
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "next": "^16.1.6",
+    "postgres": "^3.4.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "zod": "^4.3.6"
@@ -35,6 +43,7 @@
     "@types/react": "^19.2.14",
     "autoprefixer": "^10.4.24",
     "dotenv": "^17.3.1",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.9",
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",
