@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { WEDDING } from "@/lib/wedding";
+import PhotoCarousel from "@/app/components/PhotoCarousel";
 
 export default function Home() {
     return (
@@ -48,6 +49,11 @@ export default function Home() {
                         {WEDDING.dateEn}
                     </p>
                     <div className="h-px w-12 bg-gray-300" />
+                </div>
+
+                {/* 写真 */}
+                <div className="w-full mb-12">
+                    <PhotoCarousel />
                 </div>
 
                 {/* 招待メッセージ */}
