@@ -9,11 +9,11 @@ export default function Home() {
             <section className="flex flex-col items-center justify-center min-h-screen text-center px-6 py-20 relative bg-stone-50">
                 {/* Wedding Invitation ラベル */}
                 <div className="flex items-center gap-4 mb-12">
-                    <div className="h-px w-16 bg-rose-200" />
-                    <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                    <div className="h-px w-16 bg-sage-200" />
+                    <span className="text-sage-300 text-xs tracking-[0.3em] uppercase">
                         Wedding Invitation
                     </span>
-                    <div className="h-px w-16 bg-rose-200" />
+                    <div className="h-px w-16 bg-sage-200" />
                 </div>
 
                 {/* カップル名 */}
@@ -27,7 +27,7 @@ export default function Home() {
                     {WEDDING.groomEn}
                 </div>
                 <div
-                    className="text-3xl text-rose-300 my-2"
+                    className="text-3xl text-sage-300 my-2"
                     style={{ fontFamily: "Georgia, serif" }}
                 >
                     &amp;
@@ -67,7 +67,7 @@ export default function Home() {
                 {/* RSVP ボタン */}
                 <Link
                     href="/rsvp"
-                    className="inline-block bg-rose-400 text-white px-10 py-4 text-sm tracking-widest hover:bg-rose-500 transition-colors"
+                    className="inline-block bg-sage-400 text-white px-10 py-4 text-sm tracking-widest hover:bg-sage-500 transition-colors"
                 >
                     出欠を回答する
                 </Link>
@@ -87,11 +87,11 @@ export default function Home() {
                 <div className="max-w-lg mx-auto">
                     {/* セクションヘッダー */}
                     <div className="flex items-center gap-4 justify-center mb-14">
-                        <div className="h-px w-12 bg-rose-200" />
-                        <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                        <div className="h-px w-12 bg-sage-200" />
+                        <span className="text-sage-300 text-xs tracking-[0.3em] uppercase">
                             Details
                         </span>
-                        <div className="h-px w-12 bg-rose-200" />
+                        <div className="h-px w-12 bg-sage-200" />
                     </div>
 
                     <div className="space-y-12">
@@ -144,7 +144,7 @@ export default function Home() {
                                 href={WEDDING.venueMapsUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-block mt-4 text-rose-400 text-xs border-b border-rose-300 pb-0.5 hover:text-rose-500 transition-colors"
+                                className="inline-block mt-4 text-sage-400 text-xs border-b border-sage-300 pb-0.5 hover:text-sage-500 transition-colors"
                             >
                                 Google Maps で開く
                             </a>
@@ -157,16 +157,16 @@ export default function Home() {
             <section className="py-24 px-6 bg-stone-50">
                 <div className="max-w-lg mx-auto">
                     <div className="flex items-center gap-4 justify-center mb-14">
-                        <div className="h-px w-12 bg-rose-200" />
-                        <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                        <div className="h-px w-12 bg-sage-200" />
+                        <span className="text-sage-300 text-xs tracking-[0.3em] uppercase">
                             Timetable
                         </span>
-                        <div className="h-px w-12 bg-rose-200" />
+                        <div className="h-px w-12 bg-sage-200" />
                     </div>
 
                     <div className="relative">
                         {/* 縦線 */}
-                        <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-px bg-rose-100" />
+                        <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-px bg-sage-100" />
 
                         <div className="space-y-8">
                             {WEDDING.timetable.map((item, i) => (
@@ -179,7 +179,7 @@ export default function Home() {
                                     </div>
 
                                     {/* 点（中央） */}
-                                    <div className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-rose-300 bg-stone-50 z-10" />
+                                    <div className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-sage-300 bg-stone-50 z-10" />
 
                                     {/* ラベル（右） */}
                                     <div className="w-1/2 pl-8">
@@ -197,11 +197,11 @@ export default function Home() {
             {/* ── RSVP CTA Section ────────────────────────────── */}
             <section className="py-24 px-6 text-center bg-stone-50">
                 <div className="flex items-center gap-4 justify-center mb-6">
-                    <div className="h-px w-12 bg-rose-200" />
-                    <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                    <div className="h-px w-12 bg-sage-200" />
+                    <span className="text-sage-300 text-xs tracking-[0.3em] uppercase">
                         RSVP
                     </span>
-                    <div className="h-px w-12 bg-rose-200" />
+                    <div className="h-px w-12 bg-sage-200" />
                 </div>
                 <p className="text-gray-500 text-sm mb-1">
                     {WEDDING.rsvpDeadline}までに
@@ -211,7 +211,7 @@ export default function Home() {
                 </p>
                 <Link
                     href="/rsvp"
-                    className="inline-block border border-rose-400 text-rose-400 px-10 py-4 text-sm tracking-widest hover:bg-rose-400 hover:text-white transition-colors"
+                    className="inline-block border border-sage-400 text-sage-400 px-10 py-4 text-sm tracking-widest hover:bg-sage-400 hover:text-white transition-colors"
                 >
                     出欠を回答する
                 </Link>

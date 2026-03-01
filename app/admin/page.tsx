@@ -85,7 +85,7 @@ export default async function AdminPage() {
                         {/* カードヘッダー */}
                         <div className="flex items-center justify-between px-5 py-3 bg-stone-50 border-b border-stone-200">
                             <div className="flex items-center gap-3">
-                                <span className="text-xs font-semibold text-white bg-rose-400 rounded-full w-6 h-6 flex items-center justify-center">
+                                <span className="text-xs font-semibold text-white bg-sage-400 rounded-full w-6 h-6 flex items-center justify-center">
                                     {allInvitations.length - index}
                                 </span>
                                 <span className="font-semibold text-stone-800">
@@ -97,7 +97,7 @@ export default async function AdminPage() {
                                     </span>
                                 )}
                                 {entry.representative?.guestSide && (
-                                    <span className="text-xs bg-rose-50 text-rose-600 border border-rose-200 rounded-full px-2 py-0.5">
+                                    <span className="text-xs bg-sage-50 text-sage-600 border border-sage-200 rounded-full px-2 py-0.5">
                                         {GUEST_SIDE_LABEL[entry.representative.guestSide]}
                                     </span>
                                 )}
@@ -226,7 +226,7 @@ export default async function AdminPage() {
                                                     href={img.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="block rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition aspect-square"
+                                                    className="block rounded-lg overflow-hidden border border-stone-200 hover:border-sage-300 transition aspect-square"
                                                 >
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img

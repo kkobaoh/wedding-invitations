@@ -86,7 +86,7 @@ export default function PhotoCarousel() {
                         key={i}
                         onClick={() => scrollTo(i)}
                         className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                            i === current ? "bg-rose-400" : "bg-gray-300"
+                            i === current ? "bg-sage-400" : "bg-gray-300"
                         }`}
                         aria-label={`写真 ${i + 1}`}
                     />

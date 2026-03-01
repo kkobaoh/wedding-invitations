@@ -13,9 +13,9 @@ export default async function CompletePage({ searchParams }: Props) {
         <main className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-16">
             <div className="max-w-md w-full text-center">
                 {/* チェックマークアイコン */}
-                <div className="w-20 h-20 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-8">
+                <div className="w-20 h-20 rounded-full bg-sage-100 flex items-center justify-center mx-auto mb-8">
                     <svg
-                        className="w-9 h-9 text-rose-400"
+                        className="w-9 h-9 text-sage-400"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -32,11 +32,11 @@ export default async function CompletePage({ searchParams }: Props) {
 
                 {/* Complete ラベル */}
                 <div className="flex items-center gap-4 justify-center mb-4">
-                    <div className="h-px w-10 bg-rose-200" />
-                    <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                    <div className="h-px w-10 bg-sage-200" />
+                    <span className="text-sage-300 text-xs tracking-[0.3em] uppercase">
                         Complete
                     </span>
-                    <div className="h-px w-10 bg-rose-200" />
+                    <div className="h-px w-10 bg-sage-200" />
                 </div>
 
                 {/* タイトル */}
@@ -71,15 +71,15 @@ export default async function CompletePage({ searchParams }: Props) {
                 {isAttending && (
                     <div className="bg-white rounded-2xl shadow-sm p-8 mb-10 text-left">
                         <div className="flex items-center gap-3 justify-center mb-6">
-                            <div className="h-px w-8 bg-rose-200" />
+                            <div className="h-px w-8 bg-sage-200" />
                             <h2 className="text-xs tracking-[0.3em] text-gray-400 uppercase">
                                 Wedding Details
                             </h2>
-                            <div className="h-px w-8 bg-rose-200" />
+                            <div className="h-px w-8 bg-sage-200" />
                         </div>
                         <div className="space-y-4 text-sm text-gray-600">
                             <div className="flex items-start gap-4">
-                                <span className="text-rose-300 text-xs tracking-wider w-12 shrink-0 pt-0.5">
+                                <span className="text-sage-300 text-xs tracking-wider w-12 shrink-0 pt-0.5">
                                     日時
                                 </span>
                                 <span className="leading-relaxed">
@@ -90,7 +90,7 @@ export default async function CompletePage({ searchParams }: Props) {
                             </div>
                             <div className="h-px bg-gray-50" />
                             <div className="flex items-start gap-4">
-                                <span className="text-rose-300 text-xs tracking-wider w-12 shrink-0 pt-0.5">
+                                <span className="text-sage-300 text-xs tracking-wider w-12 shrink-0 pt-0.5">
                                     会場
                                 </span>
                                 <span className="leading-relaxed">
@@ -101,7 +101,7 @@ export default async function CompletePage({ searchParams }: Props) {
                             </div>
                             <div className="h-px bg-gray-50" />
                             <div className="flex items-start gap-4">
-                                <span className="text-rose-300 text-xs tracking-wider w-12 shrink-0 pt-0.5">
+                                <span className="text-sage-300 text-xs tracking-wider w-12 shrink-0 pt-0.5">
                                     お問合
                                 </span>
                                 <span className="leading-relaxed">{WEDDING.venuePhone}</span>
@@ -113,7 +113,7 @@ export default async function CompletePage({ searchParams }: Props) {
                 {/* 招待状へ戻るボタン */}
                 <Link
                     href="/"
-                    className="inline-block border border-rose-400 text-rose-400 px-10 py-3 text-sm tracking-widest hover:bg-rose-400 hover:text-white transition-colors"
+                    className="inline-block border border-sage-400 text-sage-400 px-10 py-3 text-sm tracking-widest hover:bg-sage-400 hover:text-white transition-colors"
                 >
                     招待状に戻る
                 </Link>

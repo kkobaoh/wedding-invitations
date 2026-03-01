@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             autoFocus
-                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition"
+                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-transparent transition"
                             placeholder="パスワード"
                         />
                     </div>
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-rose-400 hover:bg-rose-500 disabled:bg-rose-200 text-white font-medium rounded-lg transition"
+                        className="w-full py-3 bg-sage-400 hover:bg-sage-500 disabled:bg-sage-200 text-white font-medium rounded-lg transition"
                     >
                         {loading ? "認証中…" : "ログイン"}
                     </button>

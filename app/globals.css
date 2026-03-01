@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+@theme {
+  --color-sage-50: #f0f8f3;
+  --color-sage-100: #daf0e3;
+  --color-sage-200: #b3dfc6;
+  --color-sage-300: #8ccba8;
+  --color-sage-400: #6EAD8E;
+  --color-sage-500: #52906f;
+  --color-sage-600: #3b7055;
+}
+
 @layer base {
   body {
     font-family: "Hiragino Mincho Pro", "Yu Mincho", "游明朝", "MS PMincho",

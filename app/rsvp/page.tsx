@@ -66,9 +66,9 @@ const fmt = (price: number) =>
 
 // ── スタイル定数 ─────────────────────────────────────────────
 const inputClass =
-    "w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-colors bg-white";
+    "w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-sage-200 focus:border-sage-300 transition-colors bg-white";
 const labelClass = "block text-sm text-gray-600 mb-2";
-const errorClass = "text-rose-400 text-xs mt-1";
+const errorClass = "text-sage-400 text-xs mt-1";
 
 const MAX_IMAGES = 5;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -94,8 +94,8 @@ function RadioCard({
     return (
         <label
             className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${checked
-                ? "border-rose-400 bg-rose-50 text-rose-500"
-                : "border-gray-200 text-gray-500 hover:border-rose-200"
+                ? "border-sage-400 bg-sage-50 text-sage-500"
+                : "border-gray-200 text-gray-500 hover:border-sage-200"
                 }`}
         >
             <input
@@ -109,7 +109,7 @@ function RadioCard({
             <span>{label}</span>
             {sub && (
                 <span
-                    className={`text-xs ${checked ? "text-rose-400" : "text-gray-400"}`}
+                    className={`text-xs ${checked ? "text-sage-400" : "text-gray-400"}`}
                 >
                     {sub}
                 </span>
@@ -135,14 +135,14 @@ function ToggleCard({
             type="button"
             onClick={onToggle}
             className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 border rounded-lg cursor-pointer transition-colors text-sm text-center ${checked
-                ? "border-rose-400 bg-rose-50 text-rose-500"
-                : "border-gray-200 text-gray-500 hover:border-rose-200"
+                ? "border-sage-400 bg-sage-50 text-sage-500"
+                : "border-gray-200 text-gray-500 hover:border-sage-200"
                 }`}
         >
             <span>{label}</span>
             {sub && (
                 <span
-                    className={`text-xs ${checked ? "text-rose-400" : "text-gray-400"}`}
+                    className={`text-xs ${checked ? "text-sage-400" : "text-gray-400"}`}
                 >
                     {sub}
                 </span>
@@ -391,16 +391,16 @@ export default function RsvpPage() {
                 <div className="text-center mb-10">
                     <Link
                         href="/"
-                        className="text-rose-400 text-xs tracking-widest hover:text-rose-500 transition-colors"
+                        className="text-sage-400 text-xs tracking-widest hover:text-sage-500 transition-colors"
                     >
                         ← 招待状に戻る
                     </Link>
                     <div className="flex items-center gap-4 justify-center mt-6 mb-3">
-                        <div className="h-px w-10 bg-rose-200" />
-                        <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                        <div className="h-px w-10 bg-sage-200" />
+                        <span className="text-sage-300 text-xs tracking-[0.3em] uppercase">
                             RSVP
                         </span>
-                        <div className="h-px w-10 bg-rose-200" />
+                        <div className="h-px w-10 bg-sage-200" />
                     </div>
                     <h1 className="text-2xl font-light text-gray-700">出欠のご確認</h1>
                     <p className="text-gray-400 text-xs mt-2">
@@ -416,7 +416,7 @@ export default function RsvpPage() {
                     {/* ご出欠 */}
                     <div>
                         <label className={labelClass}>
-                            ご出欠 <span className="text-rose-400">*</span>
+                            ご出欠 <span className="text-sage-400">*</span>
                         </label>
                         <div className="flex gap-4">
                             <RadioCard
@@ -463,7 +463,7 @@ export default function RsvpPage() {
                     {/* お名前 */}
                     <div>
                         <label className={labelClass}>
-                            お名前 <span className="text-rose-400">*</span>
+                            お名前 <span className="text-sage-400">*</span>
                         </label>
                         <input
                             type="text"
@@ -521,7 +521,7 @@ export default function RsvpPage() {
                                     ヘアセット
                                     <span className="text-gray-400 text-xs">（任意）</span>
                                     {formData.hairSet && !showHairSet && (
-                                        <span className="text-rose-400 text-xs">
+                                        <span className="text-sage-400 text-xs">
                                             {HAIR_SET_OPTIONS.find(
                                                 (o) => o.value === formData.hairSet
                                             )?.label}
@@ -560,7 +560,7 @@ export default function RsvpPage() {
                                     メイク
                                     <span className="text-gray-400 text-xs">（任意）</span>
                                     {formData.makeup && !showMakeup && (
-                                        <span className="text-rose-400 text-xs">
+                                        <span className="text-sage-400 text-xs">
                                             {MAKEUP_OPTIONS.find(
                                                 (o) => o.value === formData.makeup
                                             )?.label}
@@ -629,7 +629,7 @@ export default function RsvpPage() {
                                 </p>
                                 <div>
                                     <label className={labelClass}>
-                                        お名前 <span className="text-rose-400">*</span>
+                                        お名前 <span className="text-sage-400">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -669,7 +669,7 @@ export default function RsvpPage() {
                                             ヘアセット
                                             <span className="text-gray-400 text-xs">（任意）</span>
                                             {guest.hairSet && !showCompanionHairSet[i] && (
-                                                <span className="text-rose-400 text-xs">
+                                                <span className="text-sage-400 text-xs">
                                                     {HAIR_SET_OPTIONS.find((o) => o.value === guest.hairSet)?.label}
                                                 </span>
                                             )}
@@ -707,7 +707,7 @@ export default function RsvpPage() {
                                             メイク
                                             <span className="text-gray-400 text-xs">（任意）</span>
                                             {guest.makeup && !showCompanionMakeup[i] && (
-                                                <span className="text-rose-400 text-xs">
+                                                <span className="text-sage-400 text-xs">
                                                     {MAKEUP_OPTIONS.find((o) => o.value === guest.makeup)?.label}
                                                 </span>
                                             )}
@@ -792,7 +792,7 @@ export default function RsvpPage() {
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="w-full border-2 border-dashed border-gray-200 rounded-lg py-4 text-gray-400 text-sm hover:border-rose-200 hover:text-rose-400 transition-colors"
+                                className="w-full border-2 border-dashed border-gray-200 rounded-lg py-4 text-gray-400 text-sm hover:border-sage-200 hover:text-sage-400 transition-colors"
                             >
                                 + 画像を選択
                             </button>
@@ -809,7 +809,7 @@ export default function RsvpPage() {
 
                     {/* 送信エラー */}
                     {submitError && (
-                        <p className="text-rose-500 text-sm text-center bg-rose-50 border border-rose-200 rounded-lg px-4 py-3">
+                        <p className="text-sage-500 text-sm text-center bg-sage-50 border border-sage-200 rounded-lg px-4 py-3">
                             {submitError}
                         </p>
                     )}
@@ -818,7 +818,7 @@ export default function RsvpPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-rose-400 text-white py-4 text-sm tracking-widest hover:bg-rose-500 transition-colors disabled:opacity-60 rounded-lg"
+                        className="w-full bg-sage-400 text-white py-4 text-sm tracking-widest hover:bg-sage-500 transition-colors disabled:opacity-60 rounded-lg"
                     >
                         {isSubmitting ? "送信中..." : "回答を送信する"}
                     </button>
