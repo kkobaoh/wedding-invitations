@@ -76,7 +76,7 @@ export default function Home() {
                 </p>
 
                 {/* スクロールヒント */}
-                <div className="absolute bottom-8 flex flex-col items-center gap-2 text-gray-300">
+                <div className="absolute bottom-8 flex flex-col items-center text-gray-300">
                     <span className="text-xs tracking-widest">SCROLL</span>
                     <div className="w-px h-8 bg-gray-300" />
                 </div>
