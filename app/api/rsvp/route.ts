@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { rsvpResponses, rsvpImages, rsvpFormSchema } from "@/lib/schema";
+import { invitations, guests, rsvpImages, rsvpFormSchema } from "@/lib/schema";
 
 export async function POST(request: Request) {
     try {
@@ -13,52 +14,61 @@ export async function POST(request: Request) {
         }
 
         const data = parsed.data;
-        const groupId = crypto.randomUUID();
 
-        // 申込本人を挿入
-        const records = [
-            {
-                groupId,
-                isPrimary: true,
-                name: data.name,
-                furigana: data.furigana ?? null,
-                attendance: data.attendance,
-                guestSide: data.guestSide ?? null,
-                hairSet: data.hairSet ?? null,
-                makeup: data.makeup ?? null,
-                dietaryRestrictions: data.dietaryRestrictions ?? null,
+        // 1. invitation を先に挿入（representative_id は後で更新）
+        const invitationRows = await db
+            .insert(invitations)
+            .values({
+                representativeId: null,
                 postalCode: data.postalCode ?? null,
                 address: data.address ?? null,
                 message: data.message ?? null,
-            },
-        ];
+            })
+            .returning({ id: invitations.id });
 
-        // 同行者を挿入（住所は申込本人のデータを流用、ヘアセット/メイク/メッセージは null）
-        for (const guest of data.guests ?? []) {
-            records.push({
-                groupId,
-                isPrimary: false,
-                name: guest.name,
-                furigana: guest.furigana ?? null,
-                attendance: data.attendance,
+        const invitationId = invitationRows[0]!.id;
+
+        // 2. 代表者ゲストを挿入
+        const representativeRows = await db
+            .insert(guests)
+            .values({
+                name: data.name,
+                furigana: data.furigana ?? null,
                 guestSide: data.guestSide ?? null,
-                hairSet: null,
-                makeup: null,
-                dietaryRestrictions: null,
-                postalCode: data.postalCode ?? null,
-                address: data.address ?? null,
-                message: null,
-            });
+                hairSet: data.hairSet ?? null,
+                makeup: data.makeup ?? null,
+                allergy: data.allergy ?? null,
+                invitationId,
+            })
+            .returning({ id: guests.id });
+
+        // 3. 同行者ゲストを挿入
+        if (data.guests && data.guests.length > 0) {
+            await db.insert(guests).values(
+                data.guests.map((g) => ({
+                    name: g.name,
+                    furigana: g.furigana ?? null,
+                    guestSide: data.guestSide ?? null,
+                    hairSet: null,
+                    makeup: null,
+                    allergy: null,
+                    invitationId,
+                }))
+            );
         }
 
-        await db.insert(rsvpResponses).values(records);
+        // 4. invitation.representative_id を代表者の ID で更新
+        await db
+            .update(invitations)
+            .set({ representativeId: representativeRows[0]!.id })
+            .where(eq(invitations.id, invitationId));
 
-        // 画像レコードを挿入
+        // 5. 画像レコードを挿入
         const imageUrls = data.imageUrls ?? [];
         if (imageUrls.length > 0) {
             await db.insert(rsvpImages).values(
                 imageUrls.map((url, index) => ({
-                    groupId,
+                    invitationId,
                     url,
                     sortOrder: index,
                 }))

@@ -25,7 +25,7 @@ type FormData = {
     guests: Guest[];
     hairSet: HairSet;
     makeup: Makeup;
-    dietaryRestrictions: string;
+    allergy: string;
     postalCode: string;
     address: string;
     message: string;
@@ -164,7 +164,7 @@ export default function RsvpPage() {
         guests: [],
         hairSet: "",
         makeup: "",
-        dietaryRestrictions: "",
+        allergy: "",
         postalCode: "",
         address: "",
         message: "",
@@ -320,7 +320,7 @@ export default function RsvpPage() {
                     : [],
                 hairSet: isAttending ? formData.hairSet || undefined : undefined,
                 makeup: isAttending ? formData.makeup || undefined : undefined,
-                dietaryRestrictions: formData.dietaryRestrictions || undefined,
+                allergy: formData.allergy || undefined,
                 postalCode: formData.postalCode || undefined,
                 address: formData.address || undefined,
                 message: formData.message || undefined,
@@ -599,8 +599,8 @@ export default function RsvpPage() {
                     <div>
                         <label className={labelClass}>アレルギー・食事制限</label>
                         <textarea
-                            value={formData.dietaryRestrictions}
-                            onChange={set("dietaryRestrictions")}
+                            value={formData.allergy}
+                            onChange={set("allergy")}
                             placeholder="例：えび・かにアレルギー、ベジタリアン など"
                             rows={3}
                             className={`${inputClass} resize-none`}
