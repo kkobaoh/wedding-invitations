@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -311,16 +312,15 @@ export default function RsvpPage() {
     const uploadImages = async (): Promise<string[]> => {
         if (imageFiles.length === 0) return [];
 
-        const fd = new FormData();
-        imageFiles.forEach((f) => fd.append("images", f));
-
-        const res = await fetch("/api/rsvp/images", { method: "POST", body: fd });
-        if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.error ?? "画像のアップロードに失敗しました");
+        const urls: string[] = [];
+        for (const file of imageFiles) {
+            const blob = await upload(`rsvp/${Date.now()}-${file.name}`, file, {
+                access: "public",
+                handleUploadUrl: "/api/rsvp/images",
+            });
+            urls.push(blob.url);
         }
-        const data = await res.json();
-        return data.urls as string[];
+        return urls;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
