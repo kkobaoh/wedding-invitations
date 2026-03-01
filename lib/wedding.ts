@@ -15,15 +15,23 @@ export const WEDDING = {
     dateFooter: "2026.6.6",
 
     // ── 時刻 ──────────────────────────────────
-    ceremonyTime: "12:00",
-    receptionTime: "13:30",
+    ceremonyTime: "14:10",
+    receptionTime: "14:55",
 
     // ── 会場 ──────────────────────────────────
-    venueName: "〇〇グランドホテル",
-    venuePostalCode: "〒100-0000",
-    venueAddress: "東京都千代田区〇〇1-2-3",
-    venuePhone: "03-XXXX-XXXX",
-    venueMapsUrl: "https://maps.google.com",
+    venueName: "ザ ストリングス 表参道",
+    venuePostalCode: "〒107-0061",
+    venueAddress: "東京都港区北青山３丁目６−８ ザストリングス表参道",
+    venuePhone: "0357784585",
+    venueMapsUrl: "https://maps.app.goo.gl/TEKiVQ3ncpDRAhxN6",
+
+    // ── タイムテーブル ────────────────────────
+    timetable: [
+        { time: "13:25", label: "受付開始" },
+        { time: "14:10", label: "挙式" },
+        { time: "14:55", label: "披露宴" },
+        { time: "17:10", label: "お開き" },
+    ],
 
     // ── RSVP ──────────────────────────────────
     rsvpDeadline: "2026年4月19日(日)",

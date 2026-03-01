@@ -153,6 +153,47 @@ export default function Home() {
                 </div>
             </section>
 
+            {/* ── Timetable Section ───────────────────────────── */}
+            <section className="py-24 px-6 bg-stone-50">
+                <div className="max-w-lg mx-auto">
+                    <div className="flex items-center gap-4 justify-center mb-14">
+                        <div className="h-px w-12 bg-rose-200" />
+                        <span className="text-rose-300 text-xs tracking-[0.3em] uppercase">
+                            Timetable
+                        </span>
+                        <div className="h-px w-12 bg-rose-200" />
+                    </div>
+
+                    <div className="relative">
+                        {/* 縦線 */}
+                        <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-px bg-rose-100" />
+
+                        <div className="space-y-8">
+                            {WEDDING.timetable.map((item, i) => (
+                                <div key={i} className="relative flex items-center">
+                                    {/* 時刻（左） */}
+                                    <div className="w-1/2 text-right pr-8">
+                                        <span className="text-gray-500 text-sm tracking-widest">
+                                            {item.time}
+                                        </span>
+                                    </div>
+
+                                    {/* 点（中央） */}
+                                    <div className="absolute left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-rose-300 bg-stone-50 z-10" />
+
+                                    {/* ラベル（右） */}
+                                    <div className="w-1/2 pl-8">
+                                        <span className="text-gray-700 text-sm">
+                                            {item.label}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* ── RSVP CTA Section ────────────────────────────── */}
             <section className="py-24 px-6 text-center bg-stone-50">
                 <div className="flex items-center gap-4 justify-center mb-6">
