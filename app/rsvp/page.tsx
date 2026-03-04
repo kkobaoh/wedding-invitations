@@ -11,6 +11,7 @@ type Attendance = "attend" | "absent" | "";
 type GuestSide = "groom" | "bride" | "";
 type HairSet = "short" | "upstyle" | "mens" | "children" | "";
 type Makeup = "full" | "base" | "";
+type AfterParty = "attend" | "absent" | "undecided" | "";
 
 type Guest = {
     name: string;
@@ -18,6 +19,7 @@ type Guest = {
     hairSet: HairSet;
     makeup: Makeup;
     allergy: string;
+    afterParty: AfterParty;
 };
 
 type FormData = {
@@ -30,6 +32,7 @@ type FormData = {
     hairSet: HairSet;
     makeup: Makeup;
     allergy: string;
+    afterParty: AfterParty;
     postalCode: string;
     address: string;
     message: string;
@@ -167,6 +170,7 @@ export default function RsvpPage() {
         hairSet: "",
         makeup: "",
         allergy: "",
+        afterParty: "",
         postalCode: "",
         address: "",
         message: "",
@@ -216,6 +220,7 @@ export default function RsvpPage() {
                 hairSet: prev.guests[i]?.hairSet ?? ("" as HairSet),
                 makeup: prev.guests[i]?.makeup ?? ("" as Makeup),
                 allergy: prev.guests[i]?.allergy ?? "",
+                afterParty: prev.guests[i]?.afterParty ?? ("" as AfterParty),
             }));
             return { ...prev, guestCount: count, guests: newGuests };
         });
@@ -233,7 +238,7 @@ export default function RsvpPage() {
                 setFormData((prev) => {
                     const guests = [...prev.guests];
                     guests[index] = {
-                        ...(guests[index] ?? { name: "", furigana: "", hairSet: "" as HairSet, makeup: "" as Makeup, allergy: "" }),
+                        ...(guests[index] ?? { name: "", furigana: "", hairSet: "" as HairSet, makeup: "" as Makeup, allergy: "", afterParty: "" as AfterParty }),
                         [field]: e.target.value,
                     };
                     return { ...prev, guests };
@@ -345,11 +350,13 @@ export default function RsvpPage() {
                         hairSet: g.hairSet || undefined,
                         makeup: g.makeup || undefined,
                         allergy: g.allergy || undefined,
+                        afterParty: g.afterParty || undefined,
                     }))
                     : [],
                 hairSet: isAttending ? formData.hairSet || undefined : undefined,
                 makeup: isAttending ? formData.makeup || undefined : undefined,
                 allergy: formData.allergy || undefined,
+                afterParty: formData.afterParty || undefined,
                 postalCode: formData.postalCode || undefined,
                 address: formData.address || undefined,
                 message: formData.message || undefined,
@@ -599,6 +606,34 @@ export default function RsvpPage() {
                         />
                     </div>
 
+                    {/* 二次会参加希望 */}
+                    <div>
+                        <label className={labelClass}>二次会参加希望</label>
+                        <div className="flex gap-3">
+                            <RadioCard
+                                name="afterParty"
+                                value="attend"
+                                checked={formData.afterParty === "attend"}
+                                onChange={setRadio("afterParty", "attend")}
+                                label="参加"
+                            />
+                            <RadioCard
+                                name="afterParty"
+                                value="absent"
+                                checked={formData.afterParty === "absent"}
+                                onChange={setRadio("afterParty", "absent")}
+                                label="不参加"
+                            />
+                            <RadioCard
+                                name="afterParty"
+                                value="undecided"
+                                checked={formData.afterParty === "undecided"}
+                                onChange={setRadio("afterParty", "undecided")}
+                                label="未定"
+                            />
+                        </div>
+                    </div>
+
                     {/* 参加人数（出席の場合のみ） */}
                     {isAttending && (
                         <div>
@@ -740,6 +775,51 @@ export default function RsvpPage() {
                                         rows={2}
                                         className={`${inputClass} resize-none`}
                                     />
+                                </div>
+                                {/* 二次会参加希望 */}
+                                <div>
+                                    <label className={labelClass}>二次会参加希望</label>
+                                    <div className="flex gap-3">
+                                        <RadioCard
+                                            name={`afterParty-${i}`}
+                                            value="attend"
+                                            checked={guest.afterParty === "attend"}
+                                            onChange={() =>
+                                                setFormData((prev) => {
+                                                    const newGuests = [...prev.guests];
+                                                    newGuests[i] = { ...newGuests[i]!, afterParty: "attend" };
+                                                    return { ...prev, guests: newGuests };
+                                                })
+                                            }
+                                            label="参加"
+                                        />
+                                        <RadioCard
+                                            name={`afterParty-${i}`}
+                                            value="absent"
+                                            checked={guest.afterParty === "absent"}
+                                            onChange={() =>
+                                                setFormData((prev) => {
+                                                    const newGuests = [...prev.guests];
+                                                    newGuests[i] = { ...newGuests[i]!, afterParty: "absent" };
+                                                    return { ...prev, guests: newGuests };
+                                                })
+                                            }
+                                            label="不参加"
+                                        />
+                                        <RadioCard
+                                            name={`afterParty-${i}`}
+                                            value="undecided"
+                                            checked={guest.afterParty === "undecided"}
+                                            onChange={() =>
+                                                setFormData((prev) => {
+                                                    const newGuests = [...prev.guests];
+                                                    newGuests[i] = { ...newGuests[i]!, afterParty: "undecided" };
+                                                    return { ...prev, guests: newGuests };
+                                                })
+                                            }
+                                            label="未定"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         ))}

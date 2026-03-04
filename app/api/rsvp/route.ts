@@ -38,6 +38,7 @@ export async function POST(request: Request) {
                 hairSet: data.hairSet ?? null,
                 makeup: data.makeup ?? null,
                 allergy: data.allergy ?? null,
+                afterParty: data.afterParty ?? null,
                 invitationId,
             })
             .returning({ id: guests.id });
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
                     hairSet: g.hairSet ?? null,
                     makeup: g.makeup ?? null,
                     allergy: g.allergy ?? null,
+                    afterParty: g.afterParty ?? null,
                     invitationId,
                 }))
             );

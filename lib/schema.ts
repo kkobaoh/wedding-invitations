@@ -19,6 +19,11 @@ export const hairSetEnum = pgEnum("hair_set_enum", [
     "children",
 ]);
 export const makeupEnum = pgEnum("makeup_enum", ["full", "base"]);
+export const afterPartyEnum = pgEnum("after_party_enum", [
+    "attend",
+    "absent",
+    "undecided",
+]);
 
 // ── テーブル定義 ────────────────────────────────────────────
 /**
@@ -47,6 +52,7 @@ export const guests = pgTable("guests", {
     hairSet: hairSetEnum("hair_set"),
     makeup: makeupEnum("makeup"),
     allergy: text("allergy"),
+    afterParty: afterPartyEnum("after_party"),
     /** 所属する招待状 ID（invitations.id への FK） */
     invitationId: integer("invitation_id").notNull(),
 });
@@ -76,6 +82,7 @@ export const rsvpFormSchema = z.object({
                 hairSet: z.enum(hairSetEnum.enumValues).optional(),
                 makeup: z.enum(makeupEnum.enumValues).optional(),
                 allergy: z.string().trim().optional(),
+                afterParty: z.enum(afterPartyEnum.enumValues).optional(),
             })
         )
         .max(4)
@@ -86,6 +93,7 @@ export const rsvpFormSchema = z.object({
     /** メイク種別（代表者のみ） */
     makeup: z.enum(makeupEnum.enumValues).optional(),
     allergy: z.string().trim().optional(),
+    afterParty: z.enum(afterPartyEnum.enumValues).optional(),
     postalCode: z.string().trim().optional(),
     address: z.string().trim().optional(),
     message: z.string().trim().optional(),

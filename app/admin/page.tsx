@@ -11,6 +11,7 @@ const HAIR_SET_LABEL = {
     children: "こども",
 } as const;
 const MAKEUP_LABEL = { full: "フルメイク", base: "ベースメイク" } as const;
+const AFTER_PARTY_LABEL = { attend: "参加", absent: "不参加", undecided: "未定" } as const;
 
 function formatDate(date: Date) {
     return new Intl.DateTimeFormat("ja-JP", {
@@ -38,6 +39,7 @@ export default async function AdminPage() {
     });
 
     const totalGuests = allGuests.length;
+    const afterPartyAttend = allGuests.filter((g) => g.afterParty === "attend").length;
 
     return (
         <div className="min-h-screen bg-stone-100">
@@ -60,6 +62,13 @@ export default async function AdminPage() {
                                 ゲスト合計:{" "}
                                 <strong className="text-stone-700">
                                     {totalGuests}
+                                </strong>{" "}
+                                名
+                            </span>
+                            <span>
+                                二次会参加:{" "}
+                                <strong className="text-stone-700">
+                                    {afterPartyAttend}
                                 </strong>{" "}
                                 名
                             </span>
@@ -142,9 +151,20 @@ export default async function AdminPage() {
                                                 value={entry.representative.allergy}
                                             />
                                         )}
+                                        {entry.representative?.afterParty && (
+                                            <Row
+                                                label="二次会"
+                                                value={
+                                                    AFTER_PARTY_LABEL[
+                                                        entry.representative.afterParty
+                                                    ]
+                                                }
+                                            />
+                                        )}
                                         {!entry.representative?.hairSet &&
                                             !entry.representative?.makeup &&
-                                            !entry.representative?.allergy && (
+                                            !entry.representative?.allergy &&
+                                            !entry.representative?.afterParty && (
                                                 <p className="text-stone-400 text-xs">
                                                     オプションなし
                                                 </p>
@@ -162,12 +182,17 @@ export default async function AdminPage() {
                                             {entry.companions.map((c) => (
                                                 <li
                                                     key={c.id}
-                                                    className="text-sm text-stone-700 flex gap-2"
+                                                    className="text-sm text-stone-700 flex gap-2 items-center"
                                                 >
                                                     <span>{c.name}</span>
                                                     {c.furigana && (
                                                         <span className="text-stone-400">
                                                             {c.furigana}
+                                                        </span>
+                                                    )}
+                                                    {c.afterParty && (
+                                                        <span className="text-xs bg-stone-100 text-stone-500 rounded-full px-2 py-0.5">
+                                                            二次会: {AFTER_PARTY_LABEL[c.afterParty]}
                                                         </span>
                                                     )}
                                                 </li>
