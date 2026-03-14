@@ -30,7 +30,7 @@ export const WEDDING = {
         { time: "13:25", label: "受付開始" },
         { time: "14:10", label: "挙式" },
         { time: "14:55", label: "披露宴" },
-        { time: "17:10", label: "お開き" },
+        { time: "17:25", label: "お開き" },
     ],
 
     // ── RSVP ──────────────────────────────────
