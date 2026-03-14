@@ -75,7 +75,7 @@ const labelClass = "block text-sm text-gray-600 mb-2";
 const errorClass = "text-sage-400 text-xs mt-1";
 
 const MAX_IMAGES = 5;
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 // ── ラジオカードコンポーネント ────────────────────────────────
@@ -270,7 +270,7 @@ export default function RsvpPage() {
                 return false;
             }
             if (f.size > MAX_IMAGE_SIZE) {
-                setSubmitError("1 枚あたり 5 MB 以内の画像を選択してください");
+                setSubmitError("1 枚あたり 10 MB 以内の画像を選択してください");
                 return false;
             }
             return true;
