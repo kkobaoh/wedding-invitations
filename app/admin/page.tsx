@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "@/lib/db";
 import { invitations, guests, rsvpImages } from "@/lib/schema";
 import { desc, asc } from "drizzle-orm";
