@@ -14,6 +14,7 @@ const HAIR_SET_LABEL = {
 } as const;
 const MAKEUP_LABEL = { full: "フルメイク", base: "ベースメイク" } as const;
 const AFTER_PARTY_LABEL = { attend: "参加", absent: "不参加", undecided: "未定" } as const;
+const ATTENDANCE_LABEL = { attend: "出席", absent: "欠席" } as const;
 
 function formatDate(date: Date) {
     return new Intl.DateTimeFormat("ja-JP", {
@@ -40,7 +41,8 @@ export default async function AdminPage() {
         return { ...inv, representative, companions, images };
     });
 
-    const totalGuests = allGuests.length;
+    const attendingGuests = allGuests.filter((g) => g.attendance === "attend").length;
+    const absentGuests = allGuests.filter((g) => g.attendance === "absent").length;
     const afterPartyAttend = allGuests.filter((g) => g.afterParty === "attend").length;
 
     return (
@@ -61,9 +63,16 @@ export default async function AdminPage() {
                                 件
                             </span>
                             <span>
-                                ゲスト合計:{" "}
+                                出席:{" "}
                                 <strong className="text-stone-700">
-                                    {totalGuests}
+                                    {attendingGuests}
+                                </strong>{" "}
+                                名
+                            </span>
+                            <span>
+                                欠席:{" "}
+                                <strong className="text-stone-700">
+                                    {absentGuests}
                                 </strong>{" "}
                                 名
                             </span>
@@ -110,6 +119,11 @@ export default async function AdminPage() {
                                 {entry.representative?.guestSide && (
                                     <span className="text-xs bg-sage-50 text-sage-600 border border-sage-200 rounded-full px-2 py-0.5">
                                         {GUEST_SIDE_LABEL[entry.representative.guestSide]}
+                                    </span>
+                                )}
+                                {entry.representative?.attendance && (
+                                    <span className={`text-xs rounded-full px-2 py-0.5 border ${entry.representative.attendance === "attend" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>
+                                        {ATTENDANCE_LABEL[entry.representative.attendance]}
                                     </span>
                                 )}
                             </div>

@@ -24,6 +24,7 @@ export const afterPartyEnum = pgEnum("after_party_enum", [
     "absent",
     "undecided",
 ]);
+export const attendanceEnum = pgEnum("attendance_enum", ["attend", "absent"]);
 
 // ── テーブル定義 ────────────────────────────────────────────
 /**
@@ -53,6 +54,7 @@ export const guests = pgTable("guests", {
     makeup: makeupEnum("makeup"),
     allergy: text("allergy"),
     afterParty: afterPartyEnum("after_party"),
+    attendance: attendanceEnum("attendance"),
     /** 所属する招待状 ID（invitations.id への FK） */
     invitationId: integer("invitation_id").notNull(),
 });

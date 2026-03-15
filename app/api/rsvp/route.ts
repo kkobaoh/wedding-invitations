@@ -39,6 +39,7 @@ export async function POST(request: Request) {
                 makeup: data.makeup ?? null,
                 allergy: data.allergy ?? null,
                 afterParty: data.afterParty ?? null,
+                attendance: data.attendance,
                 invitationId,
             })
             .returning({ id: guests.id });
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
                     makeup: g.makeup ?? null,
                     allergy: g.allergy ?? null,
                     afterParty: g.afterParty ?? null,
+                    attendance: "attend" as const,
                     invitationId,
                 }))
             );
